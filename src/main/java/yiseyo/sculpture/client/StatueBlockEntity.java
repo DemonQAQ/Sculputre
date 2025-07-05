@@ -2,11 +2,19 @@ package yiseyo.sculpture.client;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 
 public final class StatueBlockEntity extends BlockEntity
 {
@@ -28,10 +36,22 @@ public final class StatueBlockEntity extends BlockEntity
     /* ===== 存取器 ===== */
     public void setEntityData(CompoundTag tag, Pose p, float bYaw, float hYaw)
     {
+        if (!tag.contains("id", Tag.TAG_STRING)) {
+            tag.putString("id",
+                    ForgeRegistries.ENTITY_TYPES.getKey(
+                            EntityType.byString(tag.getString("id")).orElseThrow()
+                    ).toString());
+        }
+
         this.entityNbt = tag;
         this.pose = p;
         this.bodyYaw = bYaw;
         this.headYaw = hYaw;
+
+        setChanged();   // 存档
+        if (!level.isClientSide)
+            level.sendBlockUpdated(worldPosition, getBlockState(),
+                    getBlockState(), Block.UPDATE_CLIENTS); // 重新发包
     }
 
     public CompoundTag entityNbt()
@@ -61,7 +81,8 @@ public final class StatueBlockEntity extends BlockEntity
         this.meshReady = true;
         setChanged();
 
-        if (!level.isClientSide) {
+        if (!level.isClientSide)
+        {
             // 同步网格数据给观看该区块的玩家
             ModNet.CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(
                             () -> ((ServerLevel) level).getChunkAt(worldPosition)),
@@ -86,7 +107,7 @@ public final class StatueBlockEntity extends BlockEntity
     {
         super.saveAdditional(tag);
         if (entityNbt != null) tag.put("Entity", entityNbt);
-        if (pose != null) tag.putString("Pose", pose.name());
+        tag.putString("Pose", pose.name());
         tag.putFloat("BodyYaw", bodyYaw);
         tag.putFloat("HeadYaw", headYaw);
         if (meshReady) tag.putByteArray("Mesh", meshBytes);
@@ -97,7 +118,10 @@ public final class StatueBlockEntity extends BlockEntity
     {
         super.load(tag);
         if (tag.contains("Entity")) entityNbt = tag.getCompound("Entity");
-        if (tag.contains("Pose")) pose = Pose.valueOf(tag.getString("Pose"));
+        if (tag.contains("Pose", Tag.TAG_STRING))          // 8
+            pose = Pose.valueOf(tag.getString("Pose"));
+        else
+            pose = Pose.STANDING;                          // 兜底
         bodyYaw = tag.getFloat("BodyYaw");
         headYaw = tag.getFloat("HeadYaw");
         if (tag.contains("Mesh"))
@@ -108,14 +132,30 @@ public final class StatueBlockEntity extends BlockEntity
     }
 
     @Override
-    public CompoundTag getUpdateTag()
+    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket()
     {
-        return saveWithFullMetadata();
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag()
+    {        // 1.20 起仍然需要
+        CompoundTag tag = super.getUpdateTag();
+        if (entityNbt != null) tag.put("Entity", entityNbt.copy());
+        tag.putInt("Pose", pose.ordinal());
+        tag.putFloat("BodyYaw", bodyYaw);
+        tag.putFloat("HeadYaw", headYaw);
+        return tag;
     }
 
     @Override
     public void handleUpdateTag(CompoundTag tag)
     {
-        load(tag);
+        if (tag.contains("Entity"))
+            this.entityNbt = tag.getCompound("Entity");
+        this.pose = Pose.values()[tag.getInt("Pose")];
+        this.bodyYaw = tag.getFloat("BodyYaw");
+        this.headYaw = tag.getFloat("HeadYaw");
     }
+
 }

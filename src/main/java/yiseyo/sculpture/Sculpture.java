@@ -3,6 +3,7 @@ package yiseyo.sculpture;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -12,16 +13,13 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
-import yiseyo.sculpture.client.ModBlocks;
-import yiseyo.sculpture.client.ModItems;
-import yiseyo.sculpture.client.ModNet;
-import yiseyo.sculpture.client.StatueBER;
+import yiseyo.sculpture.client.*;
 
 @Mod(Sculpture.MODID)
 public class Sculpture
 {
     public static final String MODID = "sculpture";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     @SuppressWarnings("removal")
     public Sculpture()
@@ -35,6 +33,9 @@ public class Sculpture
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreative);
         modEventBus.addListener(this::clientSetup);
+
+        MinecraftForge.EVENT_BUS.register(StatufierItem.class);
+
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 

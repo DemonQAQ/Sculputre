@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
+import yiseyo.sculpture.Sculpture;
 
 import java.util.function.Supplier;
 
@@ -23,15 +24,22 @@ public record S2CRequestCapture(BlockPos pos)
     {
         ctx.get().enqueueWork(() ->
         {
-            System.out.println("114514");
+            Sculpture.LOGGER.info("1");
             var level = Minecraft.getInstance().level;
             if (level.getBlockEntity(msg.pos) instanceof StatueBlockEntity be && !be.hasMesh())
             {
-                var result = MeshCapture.capture(
-                        be.entityNbt(), level, be.pose(), be.bodyYaw(), be.headYaw());
-                byte[] bytes = MeshCompressor.compress(result);
-                be.acceptMesh(bytes);
-                ModNet.CHANNEL.sendToServer(new C2SUploadMesh(msg.pos(), bytes));
+                try
+                {
+                    Sculpture.LOGGER.info("2");
+                    var result = MeshCapture.capture(
+                            be.entityNbt(), level, be.pose(), be.bodyYaw(), be.headYaw());
+                    byte[] bytes = MeshCompressor.compress(result);
+                    be.acceptMesh(bytes);
+                    ModNet.CHANNEL.sendToServer(new C2SUploadMesh(msg.pos(), bytes));
+                }catch (Exception e)
+                {
+                    Sculpture.LOGGER.error("Statue mesh pipeline failed @ {}", msg.pos(), e);
+                }
             }
         });
         ctx.get().setPacketHandled(true);

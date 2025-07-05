@@ -7,32 +7,30 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Utility for grabbing an entity's baked mesh at runtime.
  * <p>
  * The capturer works by rendering the entity into a fake {@link VertexConsumer}
- * that simply records every vertex it receives, grouped by texture (RenderType layer).
+ * that records every vertex it receives, grouped by {@link RenderType}.
  * After the render pass finishes we return a {@link CaptureResult} containing
- * all vertices organised per texture, ready for compression or direct rendering.
+ * all vertices organised per RenderType, ready for compression or direct rendering.
  */
 public class MeshCapture
 {
 
-    /* ------------------------------------------------------------ */
-    /* === Immutable vertex record – keeps every attribute we need === */
-    /* ------------------------------------------------------------ */
+    /* ───────── Vertex record ───────── */
     public record Vertex(
             float x, float y, float z,
             float u, float v,
@@ -43,53 +41,45 @@ public class MeshCapture
     {
     }
 
-    /* ------------------------------------------------------------ */
-    /* === Captured result wrapper ================================= */
-    /* ------------------------------------------------------------ */
+    /* ───────── Result wrapper ───────── */
     public static class CaptureResult
     {
-        private final Map<ResourceLocation, List<Vertex>> meshByTexture;
+        private final Map<RenderType, List<Vertex>> byRenderType;
 
-        public CaptureResult(Map<ResourceLocation, List<Vertex>> meshByTexture)
+        public CaptureResult(Map<RenderType, List<Vertex>> map)
         {
-            this.meshByTexture = Map.copyOf(meshByTexture);
+            this.byRenderType = Map.copyOf(map);
         }
 
-        public Map<ResourceLocation, List<Vertex>> meshByTexture()
+        public Map<RenderType, List<Vertex>> mesh()
         {
-            return meshByTexture;
+            return byRenderType;
         }
 
         public boolean isEmpty()
         {
-            return meshByTexture.isEmpty();
+            return byRenderType.isEmpty();
         }
     }
 
-    /* ------------------------------------------------------------ */
-    /* === Capturing VertexConsumer implementation ================= */
-    /* ------------------------------------------------------------ */
+    /* ───────── Capturing consumer ───────── */
     public static class CapturingConsumer implements VertexConsumer
     {
-        private final ResourceLocation texture;
+        private final RenderType renderType;
         private final List<Vertex> out = new ArrayList<>();
-
-        // Working vars – VertexConsumer builds a vertex attribute-by-attribute then finalises with endVertex().
-        private float x, y, z;
-        private float u, v;
-        private int colorARGB = 0xFFFFFFFF;
-        private int lightPacked;
-        private int overlayPacked;
+        // working vars
+        private float x, y, z, u, v;
+        private int colorARGB = 0xFFFFFFFF, lightPacked, overlayPacked;
         private float nx = 0, ny = 1, nz = 0;
 
-        public CapturingConsumer(ResourceLocation texture)
+        public CapturingConsumer(RenderType rt)
         {
-            this.texture = texture;
+            this.renderType = rt;
         }
 
-        public ResourceLocation texture()
+        public RenderType renderType()
         {
-            return texture;
+            return renderType;
         }
 
         public List<Vertex> vertices()
@@ -97,11 +87,9 @@ public class MeshCapture
             return out;
         }
 
-        // ===== VertexConsumer implementation =====
         @Override
         public VertexConsumer vertex(double x, double y, double z)
         {
-            // convert to float now – Minecraft mostly uses float precision for positions in vertex buffers
             this.x = (float) x;
             this.y = (float) y;
             this.z = (float) z;
@@ -126,7 +114,6 @@ public class MeshCapture
         @Override
         public VertexConsumer overlayCoords(int u, int v)
         {
-            // packed as V << 16 | U (same as LightTexture)
             this.overlayPacked = (v << 16) | (u & 0xFFFF);
             return this;
         }
@@ -153,7 +140,6 @@ public class MeshCapture
             out.add(new Vertex(x, y, z, u, v, colorARGB, lightPacked, overlayPacked, nx, ny, nz));
         }
 
-        /* -------- Methods not needed for capture but required by the interface -------- */
         @Override
         public void defaultColor(int r, int g, int b, int a)
         {
@@ -165,146 +151,69 @@ public class MeshCapture
         }
     }
 
-    /* ------------------------------------------------------------ */
-    /* === MAIN API – capture() ==================================== */
-    /* ------------------------------------------------------------ */
-
-    /**
-     * Render the entity described by {@code entityNbt} into an off‑screen {@link MultiBufferSource}
-     * that records every vertex, returning the full mesh split by texture.
-     *
-     * @param entityNbt the entity data previously stored via {@link Entity#saveWithoutId}
-     * @param level     client level reference (should be Minecraft.getInstance().level)
-     * @param pose      pose to force the entity into when capturing
-     * @param bodyYaw   the body rotation (degrees)
-     * @param headYaw   the head rotation (degrees)
-     */
-    public static CaptureResult capture(CompoundTag entityNbt,
+    /* ───────── capture() ───────── */
+    public static CaptureResult capture(CompoundTag nbt,
                                         ClientLevel level,
                                         Pose pose,
                                         float bodyYaw,
                                         float headYaw)
     {
-        // 1. Re‑create entity from NBT -------------------------------------------------------------------
-        Entity entity = EntityTypeFromNbt.loadEntity(entityNbt, level);
-        if (entity == null)
-        {
-            return new CaptureResult(Collections.emptyMap());
-        }
+
+        Entity entity = EntityTypeByNbt.load(nbt, level);
+        if (entity == null) return new CaptureResult(Map.of());
 
         entity.moveTo(Vec3.ZERO);
         entity.setPose(pose);
         entity.setYRot(bodyYaw);
-        entity.setXRot(0);
-
-// If the captured entity is a LivingEntity we can also synchronise body & head rotations
         if (entity instanceof net.minecraft.world.entity.LivingEntity living)
         {
-            living.yBodyRot = bodyYaw;
-            living.yBodyRotO = bodyYaw;
+            living.yBodyRot = living.yBodyRotO = bodyYaw;
             living.setYHeadRot(headYaw);
             living.yHeadRotO = headYaw;
         }
 
-        // 2. Prepare a dummy buffer source that records vertices ----------------------------------------
         MeshBufferSource recorder = new MeshBufferSource();
+        PoseStack ps = new PoseStack();
+        ps.translate(0.5, 0, 0.5);
 
-        // 3. Render entity using vanilla RenderDispatcher ----------------------------------------------
-        PoseStack stack = new PoseStack();
-        stack.translate(0.5, 0, 0.5); // centre on block origin
-        Minecraft.getInstance().getEntityRenderDispatcher().render(
-                entity,
-                0,                // render x offset (already in stack)
-                0,                // render y offset
-                0,
-                0,                // yaw not required (we set entity yaw above)
-                Minecraft.getInstance().getFrameTime(),
-                stack,
-                recorder,
-                0xF000F0);
+        Minecraft mc = Minecraft.getInstance();
+        mc.getEntityRenderDispatcher().render(entity, 0, 0, 0, 0, mc.getFrameTime(), ps, recorder, 0xF000F0);
 
-        // 4. Finish buffer (no‑op here) & build result --------------------------------------------------
-        return new CaptureResult(recorder.asImmutable());
+        return new CaptureResult(recorder.freeze());
     }
 
-    /* ------------------------------------------------------------ */
-    /* === Helper classes ========================================= */
-    /* ------------------------------------------------------------ */
-
-    /**
-     * A MultiBufferSource implementation that provides {@link CapturingConsumer}s for every texture layer.
-     */
+    /* ───────── helper buffer source ───────── */
     private static class MeshBufferSource implements MultiBufferSource
     {
-        private final Map<ResourceLocation, CapturingConsumer> consumers = new HashMap<>();
+        private final Map<RenderType, CapturingConsumer> map = new HashMap<>();
 
-        @SuppressWarnings("removal")
         @Override
         public VertexConsumer getBuffer(RenderType type)
         {
-            ResourceLocation tex = extractTexture(type);
-            if (tex == null)
-            {
-                // Fallback: use RenderType name as pseudo texture to avoid NPE later
-                tex = new ResourceLocation("dummy", type.toString().replace(':', '/'));
-            }
-            return consumers.computeIfAbsent(tex, CapturingConsumer::new);
+            return map.computeIfAbsent(type, CapturingConsumer::new);
         }
 
-        public Map<ResourceLocation, List<Vertex>> asImmutable()
+        public Map<RenderType, List<Vertex>> freeze()
         {
-            Map<ResourceLocation, List<Vertex>> out = new HashMap<>();
-            consumers.forEach((tex, cc) -> out.put(tex, List.copyOf(cc.vertices())));
+            Map<RenderType, List<Vertex>> out = new HashMap<>();
+            map.forEach((rt, cc) -> out.put(rt, List.copyOf(cc.vertices())));
             return out;
         }
     }
 
-    /*
-     * Try to pull the texture location out of a RenderType via reflection.
-     * Implementation details change across MC versions so we keep it lenient.
-     */
-    @Nullable
-    private static ResourceLocation extractTexture(RenderType type)
-    {
-        try
-        {
-            // In 1.20 the CompositeRenderType holds a private final CompositeState "state"
-            Field stateField = ObfuscationReflectionHelper.findField(RenderType.class, "f_289963_"); // "state" SRG name
-            Object compositeState = stateField.get(type);
-            Field texStateField = ObfuscationReflectionHelper.findField(compositeState.getClass(), "f_173254_"); // "textureState" SRG name
-            Object textureStateShard = texStateField.get(compositeState);
-            Field locField = ObfuscationReflectionHelper.findField(textureStateShard.getClass(), "f_78917_"); // "location" SRG name
-            return (ResourceLocation) locField.get(textureStateShard);
-        } catch (Exception ignored)
-        {
-            return null;
-        }
-    }
-
-    /*
-     * Helper to spawn an entity from NBT without adding it to the world permanently.
-     */
-    private static class EntityTypeFromNbt
+    /* ───────── spawn entity helper ───────── */
+    private static class EntityTypeByNbt
     {
         @Nullable
-        static Entity loadEntity(CompoundTag nbt, ClientLevel level)
+        static Entity load(CompoundTag tag, ClientLevel lvl)
         {
             try
             {
-                return EntityType.loadEntityRecursive(nbt, level, entity -> entity);
+                return EntityType.loadEntityRecursive(tag, lvl, e -> e);
             } catch (Exception e)
             {
                 return null;
             }
         }
-    }
-
-    /*
-     * Utility method for external callers – create or retrieve the CapturingConsumer for a specific texture
-     * in a map keyed by ResourceLocation. (Not used internally anymore but kept for API parity.)
-     */
-    public static CapturingConsumer consumerFor(Map<ResourceLocation, CapturingConsumer> map, ResourceLocation tex)
-    {
-        return map.computeIfAbsent(tex, CapturingConsumer::new);
     }
 }

@@ -17,7 +17,6 @@ public final class StatueBlock extends Block implements EntityBlock
         super(BlockBehaviour.Properties.of().strength(2.0F, 6.0F));
     }
 
-    @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {

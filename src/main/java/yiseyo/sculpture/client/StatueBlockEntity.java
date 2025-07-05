@@ -61,11 +61,12 @@ public final class StatueBlockEntity extends BlockEntity
         this.meshReady = true;
         setChanged();
 
-        if (!level.isClientSide)
-        {
+        if (!level.isClientSide) {
+            // 同步网格数据给观看该区块的玩家
             ModNet.CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(
                             () -> ((ServerLevel) level).getChunkAt(worldPosition)),
                     new S2CSyncMesh(worldPosition, bytes));
+            // TODO: Persist the captured mesh data for future use (e.g., save to disk or item)
         }
     }
 

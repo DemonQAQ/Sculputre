@@ -23,13 +23,14 @@ public record S2CRequestCapture(BlockPos pos)
     {
         ctx.get().enqueueWork(() ->
         {
+            System.out.println("114514");
             var level = Minecraft.getInstance().level;
             if (level.getBlockEntity(msg.pos) instanceof StatueBlockEntity be && !be.hasMesh())
             {
                 var result = MeshCapture.capture(
                         be.entityNbt(), level, be.pose(), be.bodyYaw(), be.headYaw());
-                byte[] bytes = MeshCompressor.compress(result); // 需自行实现
-                be.acceptMesh(bytes);                            // 先本地上传
+                byte[] bytes = MeshCompressor.compress(result);
+                be.acceptMesh(bytes);
                 ModNet.CHANNEL.sendToServer(new C2SUploadMesh(msg.pos(), bytes));
             }
         });

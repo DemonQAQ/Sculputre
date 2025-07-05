@@ -17,6 +17,7 @@ public final class ModNet
         return id++;
     }
 
+    @SuppressWarnings("removal")
     public static void init()
     {
         CHANNEL = NetworkRegistry.newSimpleChannel(

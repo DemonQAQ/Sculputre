@@ -12,6 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.network.PacketDistributor;
 
 public final class StatufierItem extends Item
 {
@@ -46,7 +47,8 @@ public final class StatufierItem extends Item
             be.setEntityData(nbt, pose, bodyYaw, headYaw);
             be.setChanged();
             // 3. 仅告诉触发客户端去做 MeshCapture
-            ModNet.CHANNEL.sendToServer(new S2CRequestCapture(pos));
+            ModNet.CHANNEL.send(PacketDistributor.PLAYER.with(() -> sPlayer),
+                    new S2CRequestCapture(pos));
         }
 
         // 4. 耗损物品

@@ -1,12 +1,13 @@
-package yiseyo.sculpture.client;
+package yiseyo.sculpture.net;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import yiseyo.sculpture.Sculpture;
+import yiseyo.sculpture.core.MeshCapture;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -38,7 +39,11 @@ public final class MeshCompressor
         mesh.forEach((rt, list) ->
         {
             ResourceLocation tex = textureOf(rt);
+
+            Sculpture.LOGGER.info("tex = " + tex.getPath());
+
             buf.writeResourceLocation(tex);
+            buf.writeByte(layerFlag(rt));
             buf.writeVarInt(list.size());
             for (MeshCapture.Vertex v : list)
             {
@@ -71,6 +76,7 @@ public final class MeshCompressor
         for (int i = 0; i < layerCount; i++)
         {
             ResourceLocation tex = buf.readResourceLocation();
+            byte flag           = buf.readByte();
             int vCount = buf.readVarInt();
             List<MeshCapture.Vertex> list = new ArrayList<>(vCount);
 
@@ -84,7 +90,11 @@ public final class MeshCompressor
             }
 
             // Re-create a RenderType for this layer (entity cut-out no-cull is good enough here)
-            RenderType rt = RenderType.entityCutoutNoCull(tex);
+            RenderType rt = switch (flag) {             // Java 17 switch
+                case 1  -> RenderType.entityTranslucent(tex);
+                case 2  -> RenderType.entityTranslucentEmissive(tex); // 1.20.1 有
+                default -> RenderType.entityCutoutNoCull(tex);
+            };
             mesh.put(rt, list);
         }
         return new MeshCapture.CaptureResult(mesh);
@@ -140,7 +150,14 @@ public final class MeshCompressor
         }
     }
 
-
+    private static byte layerFlag(RenderType rt) {
+        String name = rt.toString();
+        if (name.contains("translucent"))
+            return 1;                         // 1 = translucent
+        if (name.contains("emissive") || name.contains("eyes"))
+            return 2;                         // 2 = emissive/eyes (全亮)
+        return 0;                             // 0 = cutout/solid
+    }
 
     // Prevent instantiation
     private MeshCompressor()

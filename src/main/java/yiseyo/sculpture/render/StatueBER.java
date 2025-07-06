@@ -1,4 +1,4 @@
-package yiseyo.sculpture.client;
+package yiseyo.sculpture.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -7,6 +7,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import org.joml.Matrix4f;
+import yiseyo.sculpture.core.MeshCapture;
+import yiseyo.sculpture.core.StatueBlockEntity;
+import yiseyo.sculpture.net.MeshCompressor;
 
 import java.util.List;
 import java.util.Map;

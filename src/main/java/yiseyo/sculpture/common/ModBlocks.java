@@ -1,4 +1,4 @@
-package yiseyo.sculpture.client;
+package yiseyo.sculpture.common;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -6,6 +6,8 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import yiseyo.sculpture.Sculpture;
+import yiseyo.sculpture.core.StatueBlock;
+import yiseyo.sculpture.core.StatueBlockEntity;
 
 public final class ModBlocks
 {

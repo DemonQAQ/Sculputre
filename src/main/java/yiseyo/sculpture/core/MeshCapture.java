@@ -1,4 +1,4 @@
-package yiseyo.sculpture.client;
+package yiseyo.sculpture.core;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -12,12 +12,9 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static yiseyo.sculpture.client.FieldUtil.*;
+import static yiseyo.sculpture.util.FieldUtil.*;
 
 /**
  * Utility for grabbing an entity's baked mesh at runtime.
@@ -205,7 +202,7 @@ public class MeshCapture
     /* ───────── helper buffer source ───────── */
     private static class MeshBufferSource implements MultiBufferSource
     {
-        private final Map<RenderType, CapturingConsumer> map = new HashMap<>();
+        private final Map<RenderType, CapturingConsumer> map = new LinkedHashMap<>();
 
         @Override
         public VertexConsumer getBuffer(RenderType type)
@@ -215,7 +212,7 @@ public class MeshCapture
 
         public Map<RenderType, List<Vertex>> freeze()
         {
-            Map<RenderType, List<Vertex>> out = new HashMap<>();
+            Map<RenderType, List<Vertex>> out = new LinkedHashMap<>();
             map.forEach((rt, cc) -> out.put(rt, List.copyOf(cc.vertices())));
             return out;
         }

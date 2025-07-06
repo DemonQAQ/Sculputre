@@ -1,4 +1,4 @@
-package yiseyo.sculpture.client;
+package yiseyo.sculpture.core;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -15,6 +15,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
+import yiseyo.sculpture.net.ModNet;
+import yiseyo.sculpture.net.S2CSyncMesh;
+import yiseyo.sculpture.common.ModBlocks;
 
 public final class StatueBlockEntity extends BlockEntity
 {

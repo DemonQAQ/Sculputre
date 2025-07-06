@@ -13,7 +13,11 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
-import yiseyo.sculpture.client.*;
+import yiseyo.sculpture.core.*;
+import yiseyo.sculpture.net.ModNet;
+import yiseyo.sculpture.render.StatueBER;
+import yiseyo.sculpture.common.ModBlocks;
+import yiseyo.sculpture.common.ModItems;
 
 @Mod(Sculpture.MODID)
 public class Sculpture

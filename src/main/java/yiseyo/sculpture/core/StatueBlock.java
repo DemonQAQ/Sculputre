@@ -1,4 +1,4 @@
-package yiseyo.sculpture.client;
+package yiseyo.sculpture.core;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
@@ -7,8 +7,6 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-
-import javax.annotation.Nullable;
 
 public final class StatueBlock extends Block implements EntityBlock
 {

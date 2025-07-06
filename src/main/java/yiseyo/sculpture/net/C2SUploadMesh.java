@@ -1,9 +1,10 @@
-package yiseyo.sculpture.client;
+package yiseyo.sculpture.net;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import yiseyo.sculpture.Sculpture;
+import yiseyo.sculpture.core.StatueBlockEntity;
 
 import java.util.function.Supplier;
 

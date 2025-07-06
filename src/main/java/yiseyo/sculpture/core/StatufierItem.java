@@ -1,10 +1,9 @@
-package yiseyo.sculpture.client;
+package yiseyo.sculpture.core;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -20,13 +19,14 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
-import yiseyo.sculpture.Sculpture;
+import yiseyo.sculpture.net.ModNet;
+import yiseyo.sculpture.net.S2CRequestCapture;
+import yiseyo.sculpture.common.ModBlocks;
 
-import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.UUID;
 
-import static yiseyo.sculpture.client.FieldUtil.*;
+import static yiseyo.sculpture.util.FieldUtil.*;
 
 public final class StatufierItem extends Item
 {

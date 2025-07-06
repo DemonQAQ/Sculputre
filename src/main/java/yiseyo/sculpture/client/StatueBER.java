@@ -47,8 +47,8 @@ public class StatueBER implements BlockEntityRenderer<StatueBlockEntity> {
                 int ovlU =  ovl        & 0xFFFF,
                         ovlV = (ovl >>> 16) & 0xFFFF;
 
-                int ltU =  packedLight        & 0xFFFF,
-                        ltV = (packedLight >>> 16) & 0xFFFF;
+                int ltU =  v.lightPacked()        & 0xFFFF,
+                        ltV = (v.lightPacked() >>> 16) & 0xFFFF;
 
                 vc.vertex(matrix, v.x(), v.y(), v.z())
                         .color(r, g, b, a)

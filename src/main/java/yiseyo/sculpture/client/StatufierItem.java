@@ -11,6 +11,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.WalkAnimationState;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -21,8 +22,11 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import yiseyo.sculpture.Sculpture;
 
+import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.UUID;
+
+import static yiseyo.sculpture.client.FieldUtil.*;
 
 public final class StatufierItem extends Item
 {
@@ -51,6 +55,23 @@ public final class StatufierItem extends Item
 
         nbt.putString("id",              // ★ 关键行：写回实体类型
                 ForgeRegistries.ENTITY_TYPES.getKey(target.getType()).toString());
+
+        // run / oRun
+        try
+        {
+            nbt.putFloat("RunPos",  RUN_F .getFloat(target));
+            nbt.putFloat("RunPosO", ORUN_F.getFloat(target));
+
+            WalkAnimationState was = target.walkAnimation;
+            nbt.putFloat("WalkPos",  WALK_POS_F   .getFloat(was));
+            nbt.putFloat("WalkSpd",  WALK_SPD_F   .getFloat(was));
+            nbt.putFloat("WalkSpdO", WALK_SPDOLD_F.getFloat(was));
+
+        } catch (IllegalAccessException e)
+        {
+            throw new RuntimeException(e);
+        }
+
         Pose pose = target.getPose();
         float bodyYaw = target.yBodyRot;
         float headYaw = target.yHeadRot;

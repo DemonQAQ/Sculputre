@@ -8,9 +8,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.FastColor;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static yiseyo.sculpture.client.FieldUtil.*;
 
 /**
  * Utility for grabbing an entity's baked mesh at runtime.
@@ -165,11 +165,31 @@ public class MeshCapture
         entity.moveTo(Vec3.ZERO);
         entity.setPose(pose);
         entity.setYRot(bodyYaw);
-        if (entity instanceof net.minecraft.world.entity.LivingEntity living)
+        if (entity instanceof LivingEntity living)
         {
+
+            /* ── 1. 同步身体 / 头旋转 ─────────────────────────────── */
             living.yBodyRot = living.yBodyRotO = bodyYaw;
             living.setYHeadRot(headYaw);
             living.yHeadRotO = headYaw;
+
+            /* ── 2. 反射写入 run / oRun ──────────────────────────── */
+            try
+            {
+                if (nbt.contains("RunPos")) RUN_F.setFloat(living, nbt.getFloat("RunPos"));
+                if (nbt.contains("RunPosO")) ORUN_F.setFloat(living, nbt.getFloat("RunPosO"));
+
+                // WalkAnimationState
+                WalkAnimationState was = living.walkAnimation;
+                if (nbt.contains("WalkPos")) WALK_POS_F.setFloat(was, nbt.getFloat("WalkPos"));
+                if (nbt.contains("WalkSpd")) WALK_SPD_F.setFloat(was, nbt.getFloat("WalkSpd"));
+                if (nbt.contains("WalkSpdO")) WALK_SPDOLD_F.setFloat(was, nbt.getFloat("WalkSpdO"));
+            } catch (Exception ignored)
+            {
+            }  // 字段变动时仍继续流程
+
+            /* ── 4. 可选：推进几 tick 让腿保持动态 ──────────────── */
+            // for (int i = 0; i < 2; i++) living.tick();
         }
 
         MeshBufferSource recorder = new MeshBufferSource();

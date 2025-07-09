@@ -1,4 +1,4 @@
-package yiseyo.sculpture.net;
+package yiseyo.sculpture.net.packet;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -7,6 +7,8 @@ import net.minecraftforge.network.NetworkEvent;
 import yiseyo.sculpture.Sculpture;
 import yiseyo.sculpture.core.MeshCapture;
 import yiseyo.sculpture.core.StatueBlockEntity;
+import yiseyo.sculpture.net.MeshCompressor;
+import yiseyo.sculpture.net.ModNet;
 
 import java.util.function.Supplier;
 

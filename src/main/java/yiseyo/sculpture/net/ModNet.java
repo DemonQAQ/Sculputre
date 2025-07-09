@@ -4,9 +4,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 import yiseyo.sculpture.Sculpture;
-import yiseyo.sculpture.net.C2SUploadMesh;
-import yiseyo.sculpture.net.S2CRequestCapture;
-import yiseyo.sculpture.net.S2CSyncMesh;
+import yiseyo.sculpture.net.packet.C2SUploadMesh;
+import yiseyo.sculpture.net.packet.S2CRequestCapture;
+import yiseyo.sculpture.net.packet.S2CSyncMesh;
 
 public final class ModNet
 {

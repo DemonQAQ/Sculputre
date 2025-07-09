@@ -1,4 +1,4 @@
-package yiseyo.sculpture.net;
+package yiseyo.sculpture.net.packet;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

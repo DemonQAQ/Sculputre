@@ -25,9 +25,6 @@ import java.util.*;
  */
 public final class MeshCompressor
 {
-
-    /* ───────── main API ───────── */
-
     public static byte[] compress(MeshCapture.CaptureResult res)
     {
 
@@ -76,7 +73,7 @@ public final class MeshCompressor
         for (int i = 0; i < layerCount; i++)
         {
             ResourceLocation tex = buf.readResourceLocation();
-            byte flag           = buf.readByte();
+            byte flag = buf.readByte();
             int vCount = buf.readVarInt();
             List<MeshCapture.Vertex> list = new ArrayList<>(vCount);
 
@@ -90,9 +87,10 @@ public final class MeshCompressor
             }
 
             // Re-create a RenderType for this layer (entity cut-out no-cull is good enough here)
-            RenderType rt = switch (flag) {             // Java 17 switch
-                case 1  -> RenderType.entityTranslucent(tex);
-                case 2  -> RenderType.entityTranslucentEmissive(tex); // 1.20.1 有
+            RenderType rt = switch (flag)
+            {
+                case 1 -> RenderType.entityTranslucent(tex);
+                case 2 -> RenderType.entityTranslucentEmissive(tex); // 1.20.1
                 default -> RenderType.entityCutoutNoCull(tex);
             };
             mesh.put(rt, list);
@@ -100,33 +98,50 @@ public final class MeshCompressor
         return new MeshCapture.CaptureResult(mesh);
     }
 
-    /* ───────── private helpers ───────── */
 
     /** Try to access the main texture bound to a RenderType via reflection. */
-    private static ResourceLocation textureOf(RenderType rt) {
-        try {
+    private static ResourceLocation textureOf(RenderType rt)
+    {
+        try
+        {
             /* 1. CompositeState */
             Object composite = Arrays.stream(rt.getClass().getDeclaredFields())
                     .filter(f -> f.getType().getSimpleName().endsWith("CompositeState"))
                     .peek(f -> f.setAccessible(true))
-                    .map(f -> {
-                        try { return f.get(rt); } catch (IllegalAccessException e) { return null; }
+                    .map(f ->
+                    {
+                        try
+                        {
+                            return f.get(rt);
+                        } catch (IllegalAccessException e)
+                        {
+                            return null;
+                        }
                     })
                     .findFirst().orElseThrow();
 
             /* 2. TextureStateShard */
-            Object texState  = Arrays.stream(composite.getClass().getDeclaredFields())
+            Object texState = Arrays.stream(composite.getClass().getDeclaredFields())
                     .filter(f -> f.getType().getSimpleName().endsWith("TextureStateShard"))
                     .peek(f -> f.setAccessible(true))
-                    .map(f -> {
-                        try { return f.get(composite); } catch (IllegalAccessException e) { return null; }
+                    .map(f ->
+                    {
+                        try
+                        {
+                            return f.get(composite);
+                        } catch (IllegalAccessException e)
+                        {
+                            return null;
+                        }
                     })
                     .findFirst().orElseThrow();
 
             /* 3. ResourceLocation OR Optional<ResourceLocation> – 向父类递归 */
             Class<?> c = texState.getClass();
-            while (c != null) {
-                for (Field f : c.getDeclaredFields()) {
+            while (c != null)
+            {
+                for (Field f : c.getDeclaredFields())
+                {
                     f.setAccessible(true);
                     Object v = f.get(texState);
 
@@ -140,8 +155,8 @@ public final class MeshCompressor
                 c = c.getSuperclass();
             }
             throw new IllegalStateException("no ResourceLocation");
-        }
-        catch (Exception e) {
+        } catch (Exception e)
+        {
             // fallback: 合法化 RenderType.toString()
             String safe = rt.toString()
                     .toLowerCase(Locale.ROOT)
@@ -150,7 +165,8 @@ public final class MeshCompressor
         }
     }
 
-    private static byte layerFlag(RenderType rt) {
+    private static byte layerFlag(RenderType rt)
+    {
         String name = rt.toString();
         if (name.contains("translucent"))
             return 1;                         // 1 = translucent

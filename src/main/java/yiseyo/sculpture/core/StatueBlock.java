@@ -7,6 +7,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 
 public final class StatueBlock extends Block implements EntityBlock
 {
@@ -16,14 +17,15 @@ public final class StatueBlock extends Block implements EntityBlock
     }
 
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
+    public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state)
     {
         return new StatueBlockEntity(pos, state);
     }
 
     @Override
-    public RenderShape getRenderShape(BlockState state)
+    public @NotNull RenderShape getRenderShape(@NotNull BlockState state)
     {
-        return RenderShape.INVISIBLE; // 交由 BER 渲染
+        // 交由 BER 渲染
+        return RenderShape.INVISIBLE;
     }
 }

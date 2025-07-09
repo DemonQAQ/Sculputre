@@ -38,7 +38,7 @@ public class Sculpture
         modEventBus.addListener(this::addCreative);
         modEventBus.addListener(this::clientSetup);
 
-        MinecraftForge.EVENT_BUS.register(StatufierItem.class);
+        MinecraftForge.EVENT_BUS.register(CaptureManager.class);
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }

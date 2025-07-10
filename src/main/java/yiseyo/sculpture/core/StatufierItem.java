@@ -13,9 +13,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 import yiseyo.sculpture.common.ModBlocks;
+import yiseyo.sculpture.core.manager.CaptureManager;
 
-import static yiseyo.sculpture.util.FieldUtil.*;
+import static yiseyo.sculpture.core.controller.FieldUtil.*;
 
 public final class StatufierItem extends Item
 {
@@ -26,15 +28,14 @@ public final class StatufierItem extends Item
     }
 
     @Override
-    public InteractionResult interactLivingEntity(ItemStack stack, Player player,
-                                                  LivingEntity target, InteractionHand hand)
+    public @NotNull InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity target, InteractionHand hand)
     {
         if (player.level().isClientSide) return InteractionResult.SUCCESS;
 
         ServerLevel level = (ServerLevel) player.level();
         BlockPos pos = target.blockPosition();
 
-        // 1. 采集实体 NBT + 姿态
+        // 采集实体信息
         CompoundTag nbt = new CompoundTag();
         target.saveWithoutId(nbt);
 
@@ -57,11 +58,12 @@ public final class StatufierItem extends Item
             throw new RuntimeException(e);
         }
 
+        // 采集实体姿态
         Pose pose = target.getPose();
         float bodyYaw = target.yBodyRot;
         float headYaw = target.yHeadRot;
 
-        // 2. 放置雕像方块
+        // 放置雕像方块
         BlockState state = ModBlocks.STATUE.get().defaultBlockState();
         level.setBlockAndUpdate(pos, state);
 
@@ -71,7 +73,8 @@ public final class StatufierItem extends Item
             be.setChanged();
             CaptureManager.pendingCapturePacket(player, level, pos);
         }
-        // 4. 耗损物品
+
+        // 耗损物品
         stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
         return InteractionResult.CONSUME;
 

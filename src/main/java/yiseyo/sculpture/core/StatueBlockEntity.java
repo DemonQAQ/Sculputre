@@ -15,8 +15,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
-import yiseyo.sculpture.net.ModNet;
-import yiseyo.sculpture.net.packet.S2CSyncMesh;
+import yiseyo.sculpture.core.net.ModNet;
+import yiseyo.sculpture.core.net.packet.S2CSyncMesh;
 import yiseyo.sculpture.common.ModBlocks;
 
 public final class StatueBlockEntity extends BlockEntity

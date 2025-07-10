@@ -1,4 +1,4 @@
-package yiseyo.sculpture.core;
+package yiseyo.sculpture.core.manager;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -7,8 +7,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.network.PacketDistributor;
-import yiseyo.sculpture.net.ModNet;
-import yiseyo.sculpture.net.packet.S2CRequestCapture;
+import yiseyo.sculpture.core.net.ModNet;
+import yiseyo.sculpture.core.net.packet.S2CRequestCapture;
 
 import java.util.HashMap;
 import java.util.Iterator;

@@ -1,12 +1,12 @@
-package yiseyo.sculpture.net;
+package yiseyo.sculpture.core.net;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 import yiseyo.sculpture.Sculpture;
-import yiseyo.sculpture.net.packet.C2SUploadMesh;
-import yiseyo.sculpture.net.packet.S2CRequestCapture;
-import yiseyo.sculpture.net.packet.S2CSyncMesh;
+import yiseyo.sculpture.core.net.packet.C2SUploadMesh;
+import yiseyo.sculpture.core.net.packet.S2CSyncMesh;
+import yiseyo.sculpture.core.net.packet.S2CRequestCapture;
 
 public final class ModNet
 {

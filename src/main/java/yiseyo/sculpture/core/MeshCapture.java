@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static yiseyo.sculpture.util.FieldUtil.*;
+import static yiseyo.sculpture.core.controller.FieldUtil.*;
 
 /**
  * Utility for grabbing an entity's baked mesh at runtime.

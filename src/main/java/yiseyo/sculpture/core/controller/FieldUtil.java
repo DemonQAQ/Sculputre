@@ -1,4 +1,4 @@
-package yiseyo.sculpture.util;
+package yiseyo.sculpture.core.controller;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.WalkAnimationState;

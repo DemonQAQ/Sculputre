@@ -1,4 +1,4 @@
-package yiseyo.sculpture.net;
+package yiseyo.sculpture.core.net;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.renderer.RenderType;

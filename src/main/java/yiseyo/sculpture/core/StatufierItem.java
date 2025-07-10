@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import yiseyo.sculpture.common.ModBlocks;
+import yiseyo.sculpture.core.controller.pose.EntityInfoController;
 import yiseyo.sculpture.core.manager.CaptureManager;
 
 import static yiseyo.sculpture.core.controller.FieldUtil.*;
@@ -35,28 +36,7 @@ public final class StatufierItem extends Item
         ServerLevel level = (ServerLevel) player.level();
         BlockPos pos = target.blockPosition();
 
-        // 采集实体信息
-        CompoundTag nbt = new CompoundTag();
-        target.saveWithoutId(nbt);
-
-        nbt.putString("id",              // ★ 关键行：写回实体类型
-                ForgeRegistries.ENTITY_TYPES.getKey(target.getType()).toString());
-
-        // run / oRun
-        try
-        {
-            nbt.putFloat("RunPos", RUN_F.getFloat(target));
-            nbt.putFloat("RunPosO", ORUN_F.getFloat(target));
-
-            WalkAnimationState was = target.walkAnimation;
-            nbt.putFloat("WalkPos", WALK_POS_F.getFloat(was));
-            nbt.putFloat("WalkSpd", WALK_SPD_F.getFloat(was));
-            nbt.putFloat("WalkSpdO", WALK_SPDOLD_F.getFloat(was));
-
-        } catch (IllegalAccessException e)
-        {
-            throw new RuntimeException(e);
-        }
+        CompoundTag entityData = EntityInfoController.serializeEntity(target);
 
         // 采集实体姿态
         Pose pose = target.getPose();
@@ -69,7 +49,7 @@ public final class StatufierItem extends Item
 
         if (level.getBlockEntity(pos) instanceof StatueBlockEntity be)
         {
-            be.setEntityData(nbt, pose, bodyYaw, headYaw);
+            be.setEntityData(entityData, pose, bodyYaw, headYaw);
             be.setChanged();
             CaptureManager.pendingCapturePacket(player, level, pos);
         }

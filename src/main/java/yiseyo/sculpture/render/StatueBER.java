@@ -7,8 +7,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import org.joml.Matrix4f;
-import yiseyo.sculpture.core.MeshCapture;
-import yiseyo.sculpture.core.StatueBlockEntity;
+import yiseyo.sculpture.core.data.capture.CaptureResult;
+import yiseyo.sculpture.core.data.capture.Vertex;
+import yiseyo.sculpture.core.world.StatueBlockEntity;
 import yiseyo.sculpture.core.net.MeshCompressor;
 
 import java.util.List;
@@ -26,19 +27,19 @@ public class StatueBER implements BlockEntityRenderer<StatueBlockEntity> {
 
         if (!be.hasMesh()) return;
 
-        MeshCapture.CaptureResult mesh = MeshCompressor.decompress(be.meshBytes());
+        CaptureResult mesh = MeshCompressor.decompress(be.meshBytes());
         if (mesh == null || mesh.isEmpty()) return;
 
         Matrix4f matrix = poseStack.last().pose();
 
         // 新接口：按 RenderType 分层
-        for (Map.Entry<RenderType, List<MeshCapture.Vertex>> entry : mesh.mesh().entrySet()) {
+        for (Map.Entry<RenderType, List<Vertex>> entry : mesh.mesh().entrySet()) {
 
             RenderType rt                  = entry.getKey();
-            List<MeshCapture.Vertex> verts = entry.getValue();
+            List<Vertex> verts = entry.getValue();
             VertexConsumer vc              = buffer.getBuffer(rt);
 
-            for (MeshCapture.Vertex v : verts) {
+            for (Vertex v : verts) {
 
                 int argb = v.colorARGB();
                 int a = (argb >>> 24) & 0xFF,

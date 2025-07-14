@@ -1,4 +1,4 @@
-package yiseyo.sculpture.core;
+package yiseyo.sculpture.core.world;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;

@@ -1,9 +1,9 @@
-package yiseyo.sculpture.core.controller.pose;
+package yiseyo.sculpture.core.controller.capture;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
-import yiseyo.sculpture.core.controller.pose.accessor.GeneralEntityInfoAccessor;
-import yiseyo.sculpture.core.controller.pose.accessor.ShulkerInfoAccessor;
+import yiseyo.sculpture.core.controller.capture.accessor.GeneralEntityInfoAccessor;
+import yiseyo.sculpture.core.controller.capture.accessor.ShulkerInfoAccessor;
 
 import java.util.List;
 

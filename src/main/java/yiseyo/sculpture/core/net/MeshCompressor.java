@@ -3,12 +3,14 @@ package yiseyo.sculpture.core.net;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import yiseyo.sculpture.Sculpture;
-import yiseyo.sculpture.core.MeshCapture;
+import yiseyo.sculpture.core.data.capture.CaptureResult;
+import yiseyo.sculpture.core.data.capture.Vertex;
+import yiseyo.sculpture.core.manager.render.LayerManager;
 
-import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Raw binary compressor / decompressor for MeshCapture results.
@@ -21,162 +23,72 @@ import java.util.*;
  * &nbsp;&nbsp;vertexCount × packed Vertex<br>
  * }<br>
  * <br>
- * Vertex fields are stored in the exact order declared in {@link MeshCapture.Vertex}.
+ * Vertex fields are stored in the exact order declared in {@link Vertex}.
  */
-public final class MeshCompressor
+public abstract class MeshCompressor
 {
-    public static byte[] compress(MeshCapture.CaptureResult res)
+    public static byte[] compress(CaptureResult res)
     {
-
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        Map<RenderType, List<Vertex>> mesh = res.mesh();
 
-        Map<RenderType, List<MeshCapture.Vertex>> mesh = res.mesh();
-        buf.writeVarInt(mesh.size());
+        buf.writeVarInt(mesh.size());                           // 1. 图层数量
 
-        mesh.forEach((rt, list) ->
+        mesh.forEach((rt, verts) ->
         {
-            ResourceLocation tex = textureOf(rt);
-
-            Sculpture.LOGGER.info("tex = " + tex.getPath());
-
-            buf.writeResourceLocation(tex);
-            buf.writeByte(layerFlag(rt));
-            buf.writeVarInt(list.size());
-            for (MeshCapture.Vertex v : list)
-            {
-                buf.writeFloat(v.x());
-                buf.writeFloat(v.y());
-                buf.writeFloat(v.z());
-                buf.writeFloat(v.u());
-                buf.writeFloat(v.v());
-                buf.writeInt(v.colorARGB());
-                buf.writeInt(v.lightPacked());
-                buf.writeInt(v.overlayPacked());
-                buf.writeFloat(v.nx());
-                buf.writeFloat(v.ny());
-                buf.writeFloat(v.nz());
-            }
+            LayerManager.writeHeader(rt, buf);            // 2. RenderType 头部
+            buf.writeVarInt(verts.size());                      // 3. 顶点计数
+            verts.forEach(v -> writeVertex(buf, v));            // 4. 顶点序列
         });
 
+        // 拷贝结果
         byte[] data = new byte[buf.readableBytes()];
         buf.readBytes(data);
         return data;
     }
 
-    public static MeshCapture.CaptureResult decompress(byte[] data)
+    public static CaptureResult decompress(byte[] data)
     {
-
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
         int layerCount = buf.readVarInt();
-        Map<RenderType, List<MeshCapture.Vertex>> mesh = new HashMap<>(layerCount);
+
+        Map<RenderType, List<Vertex>> mesh = new HashMap<>(layerCount);
 
         for (int i = 0; i < layerCount; i++)
         {
-            ResourceLocation tex = buf.readResourceLocation();
-            byte flag = buf.readByte();
-            int vCount = buf.readVarInt();
-            List<MeshCapture.Vertex> list = new ArrayList<>(vCount);
+            RenderType rt = LayerManager.readHeader(buf); // 1. 读头部 → 得到 RenderType
+            int vCount = buf.readVarInt();                   // 2. 顶点计数
+            List<Vertex> vs = new ArrayList<>(vCount);
 
-            for (int j = 0; j < vCount; j++)
-            {
-                float x = buf.readFloat(), y = buf.readFloat(), z = buf.readFloat();
-                float u = buf.readFloat(), v = buf.readFloat();
-                int c = buf.readInt(), light = buf.readInt(), ovl = buf.readInt();
-                float nx = buf.readFloat(), ny = buf.readFloat(), nz = buf.readFloat();
-                list.add(new MeshCapture.Vertex(x, y, z, u, v, c, light, ovl, nx, ny, nz));
-            }
+            for (int j = 0; j < vCount; j++) vs.add(readVertex(buf)); // 3. 顶点序列
 
-            // Re-create a RenderType for this layer (entity cut-out no-cull is good enough here)
-            RenderType rt = switch (flag)
-            {
-                case 1 -> RenderType.entityTranslucent(tex);
-                case 2 -> RenderType.entityTranslucentEmissive(tex); // 1.20.1
-                default -> RenderType.entityCutoutNoCull(tex);
-            };
-            mesh.put(rt, list);
+            mesh.put(rt, vs);
         }
-        return new MeshCapture.CaptureResult(mesh);
+
+        return new CaptureResult(mesh);
     }
 
-
-    /** Try to access the main texture bound to a RenderType via reflection. */
-    private static ResourceLocation textureOf(RenderType rt)
+    private static void writeVertex(FriendlyByteBuf buf, Vertex v)
     {
-        try
-        {
-            /* 1. CompositeState */
-            Object composite = Arrays.stream(rt.getClass().getDeclaredFields())
-                    .filter(f -> f.getType().getSimpleName().endsWith("CompositeState"))
-                    .peek(f -> f.setAccessible(true))
-                    .map(f ->
-                    {
-                        try
-                        {
-                            return f.get(rt);
-                        } catch (IllegalAccessException e)
-                        {
-                            return null;
-                        }
-                    })
-                    .findFirst().orElseThrow();
-
-            /* 2. TextureStateShard */
-            Object texState = Arrays.stream(composite.getClass().getDeclaredFields())
-                    .filter(f -> f.getType().getSimpleName().endsWith("TextureStateShard"))
-                    .peek(f -> f.setAccessible(true))
-                    .map(f ->
-                    {
-                        try
-                        {
-                            return f.get(composite);
-                        } catch (IllegalAccessException e)
-                        {
-                            return null;
-                        }
-                    })
-                    .findFirst().orElseThrow();
-
-            /* 3. ResourceLocation OR Optional<ResourceLocation> – 向父类递归 */
-            Class<?> c = texState.getClass();
-            while (c != null)
-            {
-                for (Field f : c.getDeclaredFields())
-                {
-                    f.setAccessible(true);
-                    Object v = f.get(texState);
-
-                    if (v instanceof ResourceLocation rl)          // 直接拿到
-                        return rl;
-
-                    if (v instanceof Optional<?> opt               // Optional 包装
-                            && opt.orElse(null) instanceof ResourceLocation rl)
-                        return rl;
-                }
-                c = c.getSuperclass();
-            }
-            throw new IllegalStateException("no ResourceLocation");
-        } catch (Exception e)
-        {
-            // fallback: 合法化 RenderType.toString()
-            String safe = rt.toString()
-                    .toLowerCase(Locale.ROOT)
-                    .replaceAll("[^a-z0-9/._-]", "_");
-            return new ResourceLocation("dummy", safe);
-        }
+        buf.writeFloat(v.x());
+        buf.writeFloat(v.y());
+        buf.writeFloat(v.z());
+        buf.writeFloat(v.u());
+        buf.writeFloat(v.v());
+        buf.writeInt(v.colorARGB());
+        buf.writeInt(v.lightPacked());
+        buf.writeInt(v.overlayPacked());
+        buf.writeFloat(v.nx());
+        buf.writeFloat(v.ny());
+        buf.writeFloat(v.nz());
     }
 
-    private static byte layerFlag(RenderType rt)
+    private static Vertex readVertex(FriendlyByteBuf buf)
     {
-        String name = rt.toString();
-        if (name.contains("translucent"))
-            return 1;                         // 1 = translucent
-        if (name.contains("emissive") || name.contains("eyes"))
-            return 2;                         // 2 = emissive/eyes (全亮)
-        return 0;                             // 0 = cutout/solid
-    }
-
-    // Prevent instantiation
-    private MeshCompressor()
-    {
+        float x = buf.readFloat(), y = buf.readFloat(), z = buf.readFloat();
+        float u = buf.readFloat(), v = buf.readFloat();
+        int c = buf.readInt(), light = buf.readInt(), ovl = buf.readInt();
+        float nx = buf.readFloat(), ny = buf.readFloat(), nz = buf.readFloat();
+        return new Vertex(x, y, z, u, v, c, light, ovl, nx, ny, nz);
     }
 }

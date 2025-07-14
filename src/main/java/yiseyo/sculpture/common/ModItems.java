@@ -5,7 +5,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import yiseyo.sculpture.Sculpture;
-import yiseyo.sculpture.core.StatufierItem;
+import yiseyo.sculpture.core.world.StatufierItem;
 
 public final class ModItems
 {

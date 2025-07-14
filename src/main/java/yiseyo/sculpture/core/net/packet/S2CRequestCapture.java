@@ -5,10 +5,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import yiseyo.sculpture.Sculpture;
-import yiseyo.sculpture.core.MeshCapture;
-import yiseyo.sculpture.core.StatueBlockEntity;
-import yiseyo.sculpture.core.net.ModNet;
+import yiseyo.sculpture.core.manager.capture.CaptureManager;
 import yiseyo.sculpture.core.net.MeshCompressor;
+import yiseyo.sculpture.core.world.StatueBlockEntity;
+import yiseyo.sculpture.core.net.ModNet;
 
 import java.util.function.Supplier;
 
@@ -35,8 +35,8 @@ public record S2CRequestCapture(BlockPos pos)
                 try
                 {
                     Sculpture.LOGGER.info("2");
-                    var result = MeshCapture.capture(
-                            be.entityNbt(), level, be.pose(), be.bodyYaw(), be.headYaw());
+                    var result = CaptureManager.capture(be.entityNbt(), level, be.pose(), be.bodyYaw(),
+                            be.headYaw());
                     byte[] bytes = MeshCompressor.compress(result);
                     be.acceptMesh(bytes);
                     ModNet.CHANNEL.sendToServer(new C2SUploadMesh(msg.pos(), bytes));

@@ -1,11 +1,11 @@
-package yiseyo.sculpture.core.controller.pose.accessor;
+package yiseyo.sculpture.core.controller.capture.accessor;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.WalkAnimationState;
 import net.minecraftforge.registries.ForgeRegistries;
 import yiseyo.sculpture.core.controller.FieldUtil;
-import yiseyo.sculpture.core.controller.pose.IEntityInfoAccessor;
+import yiseyo.sculpture.core.controller.capture.IEntityInfoAccessor;
 
 public class GeneralEntityInfoAccessor implements IEntityInfoAccessor
 {

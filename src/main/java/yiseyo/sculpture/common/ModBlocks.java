@@ -6,8 +6,8 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import yiseyo.sculpture.Sculpture;
-import yiseyo.sculpture.core.StatueBlock;
-import yiseyo.sculpture.core.StatueBlockEntity;
+import yiseyo.sculpture.core.world.StatueBlock;
+import yiseyo.sculpture.core.world.StatueBlockEntity;
 
 public final class ModBlocks
 {

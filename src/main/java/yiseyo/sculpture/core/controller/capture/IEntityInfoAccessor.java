@@ -1,4 +1,4 @@
-package yiseyo.sculpture.core.controller.pose;
+package yiseyo.sculpture.core.controller.capture;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;

@@ -1,4 +1,4 @@
-package yiseyo.sculpture.core;
+package yiseyo.sculpture.core.world;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -7,18 +7,14 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.WalkAnimationState;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import yiseyo.sculpture.common.ModBlocks;
-import yiseyo.sculpture.core.controller.pose.EntityInfoController;
-import yiseyo.sculpture.core.manager.CaptureManager;
-
-import static yiseyo.sculpture.core.controller.FieldUtil.*;
+import yiseyo.sculpture.core.controller.capture.EntityInfoController;
+import yiseyo.sculpture.core.manager.capture.CaptureManager;
 
 public final class StatufierItem extends Item
 {

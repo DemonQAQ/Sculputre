@@ -11,7 +11,6 @@ public class CapturingConsumer implements VertexConsumer
 {
     private final RenderType renderType;
     private final List<Vertex> out = new ArrayList<>();
-    // working vars
     private float x, y, z, u, v;
     private int colorARGB = 0xFFFFFFFF, lightPacked, overlayPacked;
     private float nx = 0, ny = 1, nz = 0;

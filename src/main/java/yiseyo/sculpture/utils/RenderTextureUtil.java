@@ -10,13 +10,11 @@ import java.util.Optional;
 
 public abstract class RenderTextureUtil
 {
-    /* ---------- 私有工具 ---------- */
-
     public static ResourceLocation textureOf(RenderType rt)
     {
         try
         {
-            /* 1. CompositeState */
+            /* CompositeState */
             Object composite = Arrays.stream(rt.getClass().getDeclaredFields())
                     .filter(f -> f.getType().getSimpleName().endsWith("CompositeState"))
                     .peek(f -> f.setAccessible(true))
@@ -32,7 +30,7 @@ public abstract class RenderTextureUtil
                     })
                     .findFirst().orElseThrow();
 
-            /* 2. TextureStateShard */
+            /* TextureStateShard */
             Object texState = Arrays.stream(composite.getClass().getDeclaredFields())
                     .filter(f -> f.getType().getSimpleName().endsWith("TextureStateShard"))
                     .peek(f -> f.setAccessible(true))
@@ -48,7 +46,7 @@ public abstract class RenderTextureUtil
                     })
                     .findFirst().orElseThrow();
 
-            /* 3. ResourceLocation OR Optional<ResourceLocation> – 向父类递归 */
+            /* ResourceLocation OR Optional<ResourceLocation> – 向父类递归 */
             Class<?> c = texState.getClass();
             while (c != null)
             {
@@ -57,10 +55,10 @@ public abstract class RenderTextureUtil
                     f.setAccessible(true);
                     Object v = f.get(texState);
 
-                    if (v instanceof ResourceLocation rl)          // 直接拿到
+                    if (v instanceof ResourceLocation rl)
                         return rl;
 
-                    if (v instanceof Optional<?> opt               // Optional 包装
+                    if (v instanceof Optional<?> opt
                             && opt.orElse(null) instanceof ResourceLocation rl)
                         return rl;
                 }
@@ -69,10 +67,7 @@ public abstract class RenderTextureUtil
             throw new IllegalStateException("no ResourceLocation");
         } catch (Exception e)
         {
-            // fallback: 合法化 RenderType.toString()
-            String safe = rt.toString()
-                    .toLowerCase(Locale.ROOT)
-                    .replaceAll("[^a-z0-9/._-]", "_");
+            String safe = rt.toString().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9/._-]", "_");
             return new ResourceLocation("dummy", safe);
         }
     }

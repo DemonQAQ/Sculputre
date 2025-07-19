@@ -33,18 +33,14 @@ public abstract class CaptureManager
 
     public static CaptureResult capture(CompoundTag nbt, ClientLevel level, Pose pose, float bodyYaw, float headYaw)
     {
-        // 1. 通过 NBT 创建实体
         Entity entity = load(nbt, level);
         if (entity == null) return new CaptureResult(Map.of());
 
-        // 2. 反序列化自定义数据，保持与写入时一致
         if (entity instanceof LivingEntity living)
         {
-            // 使用统一的 EntityInfoController 反序列化
             EntityInfoController.deserializeEntity(living, nbt);
         }
 
-        // 3. 初始化位姿、旋转等基本信息
         entity.moveTo(Vec3.ZERO);
         entity.setPose(pose);
         entity.setYRot(bodyYaw);
@@ -55,7 +51,6 @@ public abstract class CaptureManager
             living.yHeadRotO = headYaw;
         }
 
-        // 4. 将实体渲染到捕获缓冲区
         MeshBufferSource recorder = new MeshBufferSource();
         PoseStack ps = new PoseStack();
         ps.translate(0.5, 0, 0.5);

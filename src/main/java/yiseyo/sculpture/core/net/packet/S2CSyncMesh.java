@@ -26,7 +26,6 @@ public record S2CSyncMesh(BlockPos pos, byte[] mesh)
     {
         ctx.get().enqueueWork(() ->
         {
-            Sculpture.LOGGER.info("4");
             var level = Minecraft.getInstance().level;
             if (level != null && level.getBlockEntity(msg.pos) instanceof StatueBlockEntity be)
             {

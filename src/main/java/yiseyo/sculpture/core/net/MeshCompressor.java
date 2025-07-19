@@ -12,19 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Raw binary compressor / decompressor for MeshCapture results.
- * <p>
- * Wire-format:<br>
- * {@code VarInt layerCount}<br>
- * repeat layerCount × {<br>
- * &nbsp;&nbsp;{@code ResourceLocation texture}<br>
- * &nbsp;&nbsp;{@code VarInt vertexCount}<br>
- * &nbsp;&nbsp;vertexCount × packed Vertex<br>
- * }<br>
- * <br>
- * Vertex fields are stored in the exact order declared in {@link Vertex}.
- */
 public abstract class MeshCompressor
 {
     public static byte[] compress(CaptureResult res)

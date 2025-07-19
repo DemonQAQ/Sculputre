@@ -21,13 +21,10 @@ import yiseyo.sculpture.common.ModBlocks;
 
 public final class StatueBlockEntity extends BlockEntity
 {
-
-    /* -------- “原料” -------- */
     private CompoundTag entityNbt;
     private Pose pose;
     private float bodyYaw, headYaw;
 
-    /* -------- Mesh 数据 -------- */
     private byte[] meshBytes;
     private boolean meshReady = false;
 
@@ -36,7 +33,6 @@ public final class StatueBlockEntity extends BlockEntity
         super(ModBlocks.STATUE_BE.get(), pos, state);
     }
 
-    /* ===== 存取器 ===== */
     public void setEntityData(CompoundTag tag, Pose p, float bYaw, float hYaw)
     {
         if (!tag.contains("id", Tag.TAG_STRING)) {
@@ -77,7 +73,6 @@ public final class StatueBlockEntity extends BlockEntity
         return headYaw;
     }
 
-    /* 客户端回传 Mesh 时调用 */
     public void acceptMesh(byte[] bytes)
     {
         this.meshBytes = bytes;
@@ -90,7 +85,7 @@ public final class StatueBlockEntity extends BlockEntity
             ModNet.CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(
                             () -> ((ServerLevel) level).getChunkAt(worldPosition)),
                     new S2CSyncMesh(worldPosition, bytes));
-            // TODO: Persist the captured mesh data for future use (e.g., save to disk or item)
+            // TODO: 持久化雕像数据
         }
     }
 
@@ -104,7 +99,6 @@ public final class StatueBlockEntity extends BlockEntity
         return meshBytes;
     }
 
-    /* -------- NBT 持久化 -------- */
     @Override
     protected void saveAdditional(CompoundTag tag)
     {
@@ -142,7 +136,7 @@ public final class StatueBlockEntity extends BlockEntity
 
     @Override
     public CompoundTag getUpdateTag()
-    {        // 1.20 起仍然需要
+    {
         CompoundTag tag = super.getUpdateTag();
         if (entityNbt != null) tag.put("Entity", entityNbt.copy());
         tag.putInt("Pose", pose.ordinal());

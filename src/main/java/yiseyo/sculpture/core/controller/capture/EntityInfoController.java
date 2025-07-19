@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 import yiseyo.sculpture.core.controller.capture.accessor.GeneralEntityInfoAccessor;
 import yiseyo.sculpture.core.controller.capture.accessor.ShulkerInfoAccessor;
+import yiseyo.sculpture.core.controller.capture.accessor.SquidInfoAccessor;
 
 import java.util.List;
 
@@ -11,7 +12,8 @@ public class EntityInfoController
 {
     private static final List<IEntityInfoAccessor> ACCESSORS = List.of(
             new GeneralEntityInfoAccessor(),
-            new ShulkerInfoAccessor()
+            new ShulkerInfoAccessor(),
+            new SquidInfoAccessor()
     );
 
     public static CompoundTag serializeEntity(LivingEntity entity)

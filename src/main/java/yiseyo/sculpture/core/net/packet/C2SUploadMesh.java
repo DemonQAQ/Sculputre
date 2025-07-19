@@ -14,7 +14,7 @@ public record C2SUploadMesh(BlockPos pos, byte[] mesh)
         try {
             buf.writeBlockPos(msg.pos);
             buf.writeByteArray(msg.mesh);
-            Sculpture.LOGGER.info("encode mesh {} bytes", msg.mesh.length);
+//            Sculpture.LOGGER.info("encode mesh {} bytes", msg.mesh.length);
         } catch (Exception e) {
             Sculpture.LOGGER.error("encode fail", e);
         }
@@ -24,7 +24,7 @@ public record C2SUploadMesh(BlockPos pos, byte[] mesh)
         try {
             BlockPos pos = buf.readBlockPos();
             byte[] mesh  = buf.readByteArray();
-            Sculpture.LOGGER.info("decode mesh {} bytes", mesh.length);
+//            Sculpture.LOGGER.info("decode mesh {} bytes", mesh.length);
             return new C2SUploadMesh(pos, mesh);
         } catch (Exception e) {
             Sculpture.LOGGER.error("decode fail", e);
@@ -36,7 +36,6 @@ public record C2SUploadMesh(BlockPos pos, byte[] mesh)
     {
         ctx.get().enqueueWork(() ->
         {
-            Sculpture.LOGGER.info("3");
             var player = ctx.get().getSender();
             var level = player.serverLevel();
             if (level.getBlockEntity(msg.pos) instanceof StatueBlockEntity be && !be.hasMesh())

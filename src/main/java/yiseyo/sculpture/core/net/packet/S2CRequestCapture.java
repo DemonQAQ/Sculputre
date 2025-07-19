@@ -28,13 +28,11 @@ public record S2CRequestCapture(BlockPos pos)
     {
         ctx.get().enqueueWork(() ->
         {
-            Sculpture.LOGGER.info("1");
             var level = Minecraft.getInstance().level;
             if (level.getBlockEntity(msg.pos) instanceof StatueBlockEntity be && !be.hasMesh())
             {
                 try
                 {
-                    Sculpture.LOGGER.info("2");
                     var result = CaptureManager.capture(be.entityNbt(), level, be.pose(), be.bodyYaw(),
                             be.headYaw());
                     byte[] bytes = MeshCompressor.compress(result);

@@ -25,8 +25,8 @@ public abstract class LayerManager
     public static void writeHeader(RenderType rt, FriendlyByteBuf buf)
     {
         int id = find(rt);
-        buf.writeByte(id);                    // <‑‑ 先写出“使用第几个 Codec”
-        CODECS.get(id).encode(rt, buf);       // 再交给 Codec 写具体头部
+        buf.writeByte(id);                    // 先写出“使用第几个 Accessor，再交给 Accessor 写具体头部
+        CODECS.get(id).encode(rt, buf);
     }
 
     public static RenderType readHeader(FriendlyByteBuf buf)
@@ -35,13 +35,12 @@ public abstract class LayerManager
         return CODECS.get(id).decode(buf);
     }
 
-    /* ---------- 内部 ---------- */
 
     private static int find(RenderType rt)
     {
         for (int i = 0; i < CODECS.size(); i++)
             if (CODECS.get(i).supports(rt))
                 return i;
-        throw new IllegalStateException("No LayerHeaderCodec for " + rt);
+        throw new IllegalStateException("未找到访问器： " + rt);
     }
 }

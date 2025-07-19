@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -13,6 +14,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
+import yiseyo.sculpture.common.TestCommand;
 import yiseyo.sculpture.core.manager.capture.CaptureManager;
 import yiseyo.sculpture.core.net.ModNet;
 import yiseyo.sculpture.render.StatueBER;
@@ -38,6 +40,7 @@ public class Sculpture
         modEventBus.addListener(this::addCreative);
         modEventBus.addListener(this::clientSetup);
 
+        MinecraftForge.EVENT_BUS.addListener(this::onCommandRegister);
         MinecraftForge.EVENT_BUS.register(CaptureManager.class);
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
@@ -46,6 +49,11 @@ public class Sculpture
     private void commonSetup(final FMLCommonSetupEvent event)
     {
         ModNet.init();
+    }
+
+    private void onCommandRegister(RegisterCommandsEvent event)
+    {
+        TestCommand.register(event.getDispatcher());
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event)

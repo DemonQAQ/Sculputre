@@ -36,8 +36,6 @@ public final class StatufierItem extends Item
 
         // 采集实体姿态
         Pose pose = target.getPose();
-        float bodyYaw = target.yBodyRot;
-        float headYaw = target.yHeadRot;
 
         // 放置雕像方块
         BlockState state = ModBlocks.STATUE.get().defaultBlockState();
@@ -45,7 +43,7 @@ public final class StatufierItem extends Item
 
         if (level.getBlockEntity(pos) instanceof StatueBlockEntity be)
         {
-            be.setEntityData(entityData, pose, bodyYaw, headYaw);
+            be.setEntityData(entityData, pose);
             be.setChanged();
             CaptureManager.pendingCapturePacket(player, level, pos);
         }

@@ -23,7 +23,6 @@ public final class StatueBlockEntity extends BlockEntity
 {
     private CompoundTag entityNbt;
     private Pose pose;
-    private float bodyYaw, headYaw;
 
     private byte[] meshBytes;
     private boolean meshReady = false;
@@ -33,7 +32,7 @@ public final class StatueBlockEntity extends BlockEntity
         super(ModBlocks.STATUE_BE.get(), pos, state);
     }
 
-    public void setEntityData(CompoundTag tag, Pose p, float bYaw, float hYaw)
+    public void setEntityData(CompoundTag tag, Pose p)
     {
         if (!tag.contains("id", Tag.TAG_STRING)) {
             tag.putString("id",
@@ -44,8 +43,6 @@ public final class StatueBlockEntity extends BlockEntity
 
         this.entityNbt = tag;
         this.pose = p;
-        this.bodyYaw = bYaw;
-        this.headYaw = hYaw;
 
         setChanged();   // 存档
         if (!level.isClientSide)
@@ -61,16 +58,6 @@ public final class StatueBlockEntity extends BlockEntity
     public Pose pose()
     {
         return pose;
-    }
-
-    public float bodyYaw()
-    {
-        return bodyYaw;
-    }
-
-    public float headYaw()
-    {
-        return headYaw;
     }
 
     public void acceptMesh(byte[] bytes)
@@ -105,8 +92,6 @@ public final class StatueBlockEntity extends BlockEntity
         super.saveAdditional(tag);
         if (entityNbt != null) tag.put("Entity", entityNbt);
         tag.putString("Pose", pose.name());
-        tag.putFloat("BodyYaw", bodyYaw);
-        tag.putFloat("HeadYaw", headYaw);
         if (meshReady) tag.putByteArray("Mesh", meshBytes);
     }
 
@@ -119,8 +104,6 @@ public final class StatueBlockEntity extends BlockEntity
             pose = Pose.valueOf(tag.getString("Pose"));
         else
             pose = Pose.STANDING;                          // 兜底
-        bodyYaw = tag.getFloat("BodyYaw");
-        headYaw = tag.getFloat("HeadYaw");
         if (tag.contains("Mesh"))
         {
             meshBytes = tag.getByteArray("Mesh");
@@ -140,8 +123,6 @@ public final class StatueBlockEntity extends BlockEntity
         CompoundTag tag = super.getUpdateTag();
         if (entityNbt != null) tag.put("Entity", entityNbt.copy());
         tag.putInt("Pose", pose.ordinal());
-        tag.putFloat("BodyYaw", bodyYaw);
-        tag.putFloat("HeadYaw", headYaw);
         return tag;
     }
 
@@ -151,8 +132,6 @@ public final class StatueBlockEntity extends BlockEntity
         if (tag.contains("Entity"))
             this.entityNbt = tag.getCompound("Entity");
         this.pose = Pose.values()[tag.getInt("Pose")];
-        this.bodyYaw = tag.getFloat("BodyYaw");
-        this.headYaw = tag.getFloat("HeadYaw");
     }
 
 }

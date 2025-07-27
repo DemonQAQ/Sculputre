@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.boss.EnderDragonPart;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.entity.PartEntity;
 import yiseyo.sculpture.core.controller.capture.EntityInfoController;
 import yiseyo.sculpture.core.manager.capture.CaptureManager;
 import yiseyo.sculpture.core.world.StatueBlockEntity;
@@ -53,7 +55,7 @@ public final class TestCommand
         EntityHitResult hit = ProjectileUtil.getEntityHitResult(
                 level, player, eye, reachEnd,
                 player.getBoundingBox().expandTowards(look.scale(REACH)).inflate(1.0D),
-                e -> e.isPickable() && (e instanceof LivingEntity || e instanceof EnderDragonPart));
+                e -> e.isPickable() && (e instanceof Entity));
 
         if (hit == null)
         {
@@ -61,20 +63,18 @@ public final class TestCommand
             return 0;
         }
 
-        LivingEntity target = (LivingEntity) hit.getEntity();
+        Entity target = hit.getEntity();
         BlockPos pos = target.blockPosition();
 
         CompoundTag entityData = EntityInfoController.serializeEntity(target);
         Pose pose = target.getPose();
-        float bodyYaw = target.yBodyRot;
-        float headYaw = target.yHeadRot;
 
         BlockState state = ModBlocks.STATUE.get().defaultBlockState();
         level.setBlockAndUpdate(pos, state);
 
         if (level.getBlockEntity(pos) instanceof StatueBlockEntity be)
         {
-            be.setEntityData(entityData, pose, bodyYaw, headYaw);
+            be.setEntityData(entityData, pose);
             be.setChanged();
             CaptureManager.pendingCapturePacket(player, level, pos);
         }

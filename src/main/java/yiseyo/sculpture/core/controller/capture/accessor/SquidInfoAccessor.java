@@ -1,6 +1,7 @@
 package yiseyo.sculpture.core.controller.capture.accessor;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Squid;
 import yiseyo.sculpture.core.controller.capture.IEntityInfoAccessor;
@@ -39,7 +40,7 @@ public class SquidInfoAccessor implements IEntityInfoAccessor
     }
 
     @Override
-    public void writeEntityInfo(LivingEntity entity, CompoundTag tag)
+    public void writeEntityInfo(Entity entity, CompoundTag tag)
     {
         if (!(entity instanceof Squid squid)) return;
 
@@ -51,12 +52,12 @@ public class SquidInfoAccessor implements IEntityInfoAccessor
             tag.putFloat("TentacleAngle", TENTACLE_ANGLE_F.getFloat(squid));
         } catch (IllegalAccessException e)
         {
-            throw new RuntimeException("写入鱿鱼特有字段失败", e);
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void readEntityInfo(LivingEntity entity, CompoundTag tag)
+    public void readEntityInfo(Entity entity, CompoundTag tag)
     {
         if (!(entity instanceof Squid squid)) return;
         if (!tag.contains("BodyRotX")) return;
@@ -81,12 +82,12 @@ public class SquidInfoAccessor implements IEntityInfoAccessor
             PREV_TENTACLE_ANGLE_F.setFloat(squid, tentacleAng);
         } catch (IllegalAccessException e)
         {
-            throw new RuntimeException("读取鱿鱼特有字段失败", e);
+            e.printStackTrace();
         }
     }
 
     @Override
-    public boolean isApplicableTo(LivingEntity entity)
+    public boolean isApplicableTo(Entity entity)
     {
         return entity instanceof Squid;
     }

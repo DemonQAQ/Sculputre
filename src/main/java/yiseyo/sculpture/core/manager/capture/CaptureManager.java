@@ -31,7 +31,7 @@ public abstract class CaptureManager
 {
     private static final HashMap<UUID, PendingCapture> PENDING = new HashMap<>();
 
-    public static CaptureResult capture(CompoundTag nbt, ClientLevel level, Pose pose, float bodyYaw, float headYaw)
+    public static CaptureResult capture(CompoundTag nbt, ClientLevel level, Pose pose)
     {
         Entity entity = load(nbt, level);
         if (entity == null) return new CaptureResult(Map.of());
@@ -43,13 +43,6 @@ public abstract class CaptureManager
 
         entity.moveTo(Vec3.ZERO);
         entity.setPose(pose);
-        entity.setYRot(bodyYaw);
-        if (entity instanceof LivingEntity living)
-        {
-            living.yBodyRot = living.yBodyRotO = bodyYaw;
-            living.setYHeadRot(headYaw);
-            living.yHeadRotO = headYaw;
-        }
 
         MeshBufferSource recorder = new MeshBufferSource();
         PoseStack ps = new PoseStack();

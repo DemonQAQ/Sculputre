@@ -2,6 +2,7 @@ package yiseyo.sculpture.core.controller.capture.accessor;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
@@ -39,7 +40,7 @@ public class ShulkerInfoAccessor implements IEntityInfoAccessor
     }
 
     @Override
-    public void writeEntityInfo(LivingEntity entity, CompoundTag tag)
+    public void writeEntityInfo(Entity entity, CompoundTag tag)
     {
         if (!(entity instanceof Shulker shulker)) return;
 
@@ -58,7 +59,7 @@ public class ShulkerInfoAccessor implements IEntityInfoAccessor
 
     /* ---------- 从 NBT 还原 ---------- */
     @Override
-    public void readEntityInfo(LivingEntity entity, CompoundTag tag)
+    public void readEntityInfo(Entity entity, CompoundTag tag)
     {
         if (!(entity instanceof Shulker shulker)) return;
         if (!tag.contains("ShulkerPeekRaw")) return;
@@ -93,7 +94,7 @@ public class ShulkerInfoAccessor implements IEntityInfoAccessor
     }
 
     @Override
-    public boolean isApplicableTo(LivingEntity entity)
+    public boolean isApplicableTo(Entity entity)
     {
         return entity instanceof Shulker;
     }

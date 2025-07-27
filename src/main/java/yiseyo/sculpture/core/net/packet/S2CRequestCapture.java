@@ -33,8 +33,7 @@ public record S2CRequestCapture(BlockPos pos)
             {
                 try
                 {
-                    var result = CaptureManager.capture(be.entityNbt(), level, be.pose(), be.bodyYaw(),
-                            be.headYaw());
+                    var result = CaptureManager.capture(be.entityNbt(), level, be.pose());
                     byte[] bytes = MeshCompressor.compress(result);
                     be.acceptMesh(bytes);
                     ModNet.CHANNEL.sendToServer(new C2SUploadMesh(msg.pos(), bytes));
